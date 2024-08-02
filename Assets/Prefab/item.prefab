@@ -89,4 +89,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   image: {fileID: 4116420561076923496}
+  cardName: 
+  stats: 0
+  tier: 0
+  type: 0
+  sprite: {fileID: 0}
   parentAfterDrag: {fileID: 0}

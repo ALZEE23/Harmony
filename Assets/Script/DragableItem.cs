@@ -6,8 +6,19 @@ using UnityEngine.UI;
 
 public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    
     public Image image;
+    public string cardName;
+    public int stats;
+    public Tier tier;
+    public Type type;
+    public Sprite sprite; 
     [HideInInspector]public Transform parentAfterDrag;
+
+    public void Start(){
+        image.sprite = sprite;
+        gameObject.name = cardName;
+    }
     public void OnBeginDrag(PointerEventData eventData)
     {
         Debug.Log("Begin Drag");
@@ -29,5 +40,24 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         transform.SetParent(parentAfterDrag);
         image.raycastTarget = true;
     }
+    
 
+}
+
+public enum Tier
+{
+    Nothing,
+    S,
+    A,
+    B,
+    C
+}
+
+public enum Type{
+    Nothing,
+    Fighter,
+    Tank,
+    Support,
+    Marksman,
+    Mage
 }
