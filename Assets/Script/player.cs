@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -37,6 +38,25 @@ public class player : MonoBehaviour
     void Update()
     {
 
+        Movement();
+
+        // Player and Camera rotation
+        //*if (canMove)
+        //{
+        //    rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
+        //    rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+        //    playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+         //   transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
+        //}
+        
+
+    }
+    // private void OnTriggerEnter(Collider other){
+        
+    // }
+
+
+    public void Movement(){
         Vector3 forward = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
 
@@ -62,12 +82,12 @@ public class player : MonoBehaviour
         }
 
         characterController.Move(moveDirection * Time.deltaTime);
-        
+
         if (moveDirection.x < 0)
         {
             spriteRenderer.flipX = true;
-           
-        } else
+        }
+        else
         {
             spriteRenderer.flipX = false;
         }
@@ -75,20 +95,10 @@ public class player : MonoBehaviour
         if (moveDirection.x < 0 || moveDirection.x > 0)
         {
             lookAnimator.SetBool("run", true);
-        } else
+        }
+        else
         {
             lookAnimator.SetBool("run", false);
         }
-
-        // Player and Camera rotation
-        //*if (canMove)
-        //{
-        //    rotationX += -Input.GetAxis("Mouse Y") * lookSpeed;
-        //    rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-        //    playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-         //   transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
-        //}
-
-
     }
 }
