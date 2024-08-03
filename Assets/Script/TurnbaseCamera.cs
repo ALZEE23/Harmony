@@ -5,19 +5,17 @@ using UnityEngine;
 public class TurnbaseCamera : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField]private Animator animator;
+    public Animator animator;
 
     void Awake(){
-
+        animator = GetComponent<Animator>();
     }
-    void Start()
-    {
-        
+    
+    void OnTriggerStay(Collider other){
+        animator.Play("Turnbase");
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    void OnTriggerExit(Collider other){
+        animator.Play("World");
     }
 }
