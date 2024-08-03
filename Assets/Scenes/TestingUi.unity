@@ -1079,7 +1079,19 @@ MonoBehaviour:
   - {fileID: 896774080}
   - {fileID: 2106258170}
   - {fileID: 1784836045}
-  m_Instructions: []
+  m_Instructions:
+  - m_FullHash: 2130342341
+    m_VirtualCamera: {fileID: 896774080}
+    m_ActivateAfter: 0
+    m_MinDuration: 0
+  - m_FullHash: 1631324248
+    m_VirtualCamera: {fileID: 2106258170}
+    m_ActivateAfter: 0
+    m_MinDuration: 0
+  - m_FullHash: -1089324497
+    m_VirtualCamera: {fileID: 1784836045}
+    m_ActivateAfter: 0
+    m_MinDuration: 0
   m_DefaultBlend:
     m_Style: 1
     m_Time: 0.5
@@ -1090,7 +1102,13 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   m_CustomBlends: {fileID: 0}
-  m_ParentHash: []
+  m_ParentHash:
+  - m_Hash: 2130342341
+    m_ParentHash: 756556552
+  - m_Hash: 1631324248
+    m_ParentHash: 756556552
+  - m_Hash: -1089324497
+    m_ParentHash: 756556552
 --- !u!4 &452800865
 Transform:
   m_ObjectHideFlags: 0
@@ -2284,7 +2302,7 @@ MonoBehaviour:
   - m_Script
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
-  m_Priority: 10
+  m_Priority: 2
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 1204168068}
   m_Follow: {fileID: 1204168068}
@@ -3775,7 +3793,7 @@ MonoBehaviour:
   - m_Script
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
-  m_Priority: 10
+  m_Priority: 0
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 1872899727}
   m_Follow: {fileID: 1872899727}
