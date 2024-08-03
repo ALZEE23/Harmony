@@ -7,7 +7,7 @@ using UnityEngine.UI;
 [Serializable]
 public class Variable
 {
-    public string name;
+    public string name  ;
     public int stats;
     public Tier tier;
     public Type type;
@@ -28,7 +28,7 @@ public class DeckSystem : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        PlayCard.onClick.AddListener(PlayOnClick);
+        // PlayCard.onClick.AddListener(PlayOnClick);
     }
 
     // Update is called once per frame
@@ -45,7 +45,13 @@ public class DeckSystem : MonoBehaviour
 
     public void RandomizeCard(Transform cardParent)
     {
-        Variable selectedVariable = SelectRandomVariable();
+        foreach (Transform child in cardParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        Variable selectedVariable = SelectRandomVariable(); 
+        
 
         if (selectedVariable != null)
         {
@@ -57,6 +63,7 @@ public class DeckSystem : MonoBehaviour
 
             // Set the data for the card
             if (dragableItem != null)
+
             {
                 dragableItem.cardName = selectedVariable.name;
                 dragableItem.stats = selectedVariable.stats;
