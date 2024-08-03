@@ -24,11 +24,18 @@ public class DeckSystem : MonoBehaviour
     public Transform parent2;
     public Transform parent3;
 
+    public Transform card1;
+    public Transform card2;
+    public Transform card3;
+    public int maxMana = 6;
+    private int availableMana;
+
     // public Transform cardParent;
     // Start is called before the first frame update
     void Start()
     {
         // PlayCard.onClick.AddListener(PlayOnClick);
+        availableMana = maxMana;
     }
 
     // Update is called once per frame
@@ -38,9 +45,91 @@ public class DeckSystem : MonoBehaviour
     }
 
     public void PlayOnClick(){
+        int totalStats = 0;
+        int totalManaCost = 0;
+
+        // Hitung total stats dan biaya mana dari masing-masing parent
+        totalManaCost += CalculateManaCost(card1);
+        totalManaCost += CalculateManaCost(card2);
+        totalManaCost += CalculateManaCost(card3);
+
+        // Cek apakah total biaya mana melebihi mana yang tersedia
+        if (totalManaCost > availableMana)
+        {
+            Debug.Log("Not enough mana to perform action.");
+            return; // Batalkan aksi jika mana tidak cukup
+        }
+
+        // Jika mana cukup, lakukan aksi dan kurangi mana yang tersedia
+        totalStats += Attack(card1);
+        totalStats += Attack(card2);
+        totalStats += Attack(card3);
+        availableMana -= totalManaCost;
+
+        // Log total stats keseluruhan
+        Debug.Log("Total Stats from all cards: " + totalStats);
+        Debug.Log("Remaining Mana: " + availableMana);  
         RandomizeCard(parent1);
         RandomizeCard(parent2);
         RandomizeCard(parent3);
+
+
+        availableMana = maxMana;
+    }
+    public int Attack(Transform cardAttack){
+        int totalStats = 0;
+
+        // Iterasi melalui setiap child dari cardAttack
+        foreach (Transform child in cardAttack)
+        {
+            DragableItem dragableItem = child.GetComponent<DragableItem>();
+            if (dragableItem != null)
+            {
+                totalStats += dragableItem.stats;
+            }
+        }
+
+        // Log total stats for debugging
+        Debug.Log("Total Stats from cards: " + totalStats);
+
+        // Hapus semua child setelah perhitungan selesai
+        foreach (Transform child in cardAttack)
+        {
+            Destroy(child.gameObject);
+        }
+
+        return totalStats;
+    }
+
+    public int CalculateManaCost(Transform cardAttack)
+    {
+        int totalManaCost = 0;
+
+        // Iterasi melalui setiap child dari cardAttack untuk menghitung biaya mana
+        foreach (Transform child in cardAttack)
+        {
+            DragableItem dragableItem = child.GetComponent<DragableItem>();
+            if (dragableItem != null)
+            {
+                switch (dragableItem.tier)
+                {
+                    case Tier.S:
+                        totalManaCost += 4;
+                        break;
+                    case Tier.A:
+                        totalManaCost += 3;
+                        break;
+                    case Tier.B:
+                        totalManaCost += 2;
+                        break;
+                    case Tier.C:
+                        totalManaCost += 1;
+                        break;
+                }
+            }
+        }
+
+        return totalManaCost;
     }
 
     public void RandomizeCard(Transform cardParent)
