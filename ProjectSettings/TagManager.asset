@@ -8,6 +8,7 @@ TagManager:
   - slot
   - hand
   - item
+  - Enemy
   layers:
   - Default
   - TransparentFX
