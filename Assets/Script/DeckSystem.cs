@@ -23,6 +23,20 @@ public class Variable
     public Action action;
     public TurnState currentTurn;
 }
+
+[Serializable]
+public class EnemyVariable
+{
+    public string name;
+    public int healthEnemy;
+    public int armorEnemy;
+    public int stats;
+    public EnemyCard type;
+    public bool skipTurn;
+    public Tier tier;
+    
+    public Sprite sprite;
+}
 public class DeckSystem : MonoBehaviour
 {   
     [SerializeField] ParticleSystem Iceattack;
@@ -39,6 +53,9 @@ public class DeckSystem : MonoBehaviour
     public Transform parent1;
     public Transform parent2;
     public Transform parent3;
+    public Transform enemy1;
+    public Transform enemy2;
+    public Transform enemy3;
 
     public Transform card1;
     public Transform card2;
@@ -46,10 +63,14 @@ public class DeckSystem : MonoBehaviour
     public int maxMana = 6;
     private int availableMana;
     public TurnState currentTurn;
-    public GameObject enemyObject;
+    // public GameObject enemyObject;
     public GameObject playerObject;
     public GameObject image;
-
+    public List<EnemyVariable> enemyVariables = new List<EnemyVariable>();
+    public GameObject enemyPrefab;
+    
+    public List<GameObject> enemyObjects; // List of enemy objects
+    [SerializeField]private int currentEnemyIndex = 0;
 
     void Start()
     {
@@ -57,25 +78,15 @@ public class DeckSystem : MonoBehaviour
         availableMana = maxMana;
         currentTurn = TurnState.PlayerTurn;
         PlayCard.onClick.AddListener(PlayOnClick);
-        DisableAllParticleSystems();
+        enemyObjects = new List<GameObject>();
     }
 
 
     void Update()
     {
-        
-    }
-
-    private void DisableAllParticleSystems()
-    {
-        
-    }
-
-      private void ActivateParticleSystem(GameObject particleSystemObject)
-    {
-        Debug.Log($"Activating particle system: {particleSystemObject.name}");
-        particleSystemObject.SetActive(false); // Reset to ensure a clean state
-        particleSystemObject.SetActive(true); // Activate to play the particle system
+        RandomizeEnemy(enemy1);
+        RandomizeEnemy(enemy2);
+        RandomizeEnemy(enemy3);
     }
 
     public void PlayOnClick(){
@@ -111,15 +122,28 @@ public class DeckSystem : MonoBehaviour
 
 
         availableMana = maxMana;
-        Enemy enemyScript = enemyObject.GetComponent<Enemy>();
-        if (enemyScript != null)
+        // Enemy enemyScript = enemyObject.GetComponent<Enemy>();
+        // if (enemyScript != null)
+        // {
+        //     enemyScript.healthEnemy += enemyScript.armorEnemy - totalStats;
+        //     Debug.Log("Enemy Health: " + enemyScript.healthEnemy);
+        // }
+        // else
+        // {
+        //     Debug.LogError("Enemy script not found on enemy object!");
+        // }
+        if (enemyObjects[currentEnemyIndex] != null)
         {
-            enemyScript.healthEnemy += enemyScript.armorEnemy - totalStats;
-            Debug.Log("Enemy Health: " + enemyScript.healthEnemy);
-        }
-        else
-        {
-            Debug.LogError("Enemy script not found on enemy object!");
+            Enemy enemyScript = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+            if (enemyScript != null)
+            {
+                enemyScript.healthEnemy += enemyScript.armorEnemy - totalStats;
+                Debug.Log("Enemy Health: " + enemyScript.healthEnemy);
+            }
+            else
+            {
+                Debug.LogError("Enemy script not found on enemy object!");
+            }
         }
         image.SetActive(false);
         EndTurn();
@@ -203,13 +227,58 @@ public class DeckSystem : MonoBehaviour
 
     public int ExecuteAction(DragableItem item)
     {
+        // int totalStats = 0;
+        // switch (item.action)
+        // {
+        //     case Action.Skill:
+        //         totalStats += item.stats + 6; // Contoh penanganan action Skill
+        //         break;
+        //     case Action.Fire:
+        //         totalStats += CalculateFireDamage(item);
+        //         break;
+        //     case Action.Ice:
+        //         totalStats += CalculateIceDamage(item);
+        //         Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+        //         if (enemyStats.armorEnemy > 0)
+        //         {
+        //             enemyStats.skipTurn = true;
+        //             Debug.Log("Enemy armor is less than 0, player gets another turn!");
+        //         }
+        //         break;
+        //     case Action.Thunder:
+        //         totalStats += CalculateThunderDamage(item);
+        //         break;
+        //     case Action.Heal:
+        //         HealPlayer(item.stats);
+        //         break;
+        //     case Action.Defense:
+        //         // Implement defense action
+        //         DefensePlayer(item.stats);
+        //         break;
+        //     case Action.Buff:
+        //         // Implement buff action    
+        //         break;
+        //     case Action.Slash:
+        //         totalStats += item.stats;
+        //         break;
+        //     case Action.Stab:
+        //         // Implement stab action
+        //         break;
+        //     case Action.DefenseFriend:
+        //         // Implement defense friend action
+        //         break;
+        //     default:
+        //         totalStats += item.stats;
+        //         break;
+        // }
+        // return totalStats;
         int totalStats = 0;
-          DisableAllParticleSystems();
+        Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
 
         switch (item.action)
         {
             case Action.Skill:
-                totalStats += item.stats + 6; // Contoh penanganan action Skill
+                totalStats += item.stats + 6;
                 break;
             case Action.Fire:
            
@@ -218,9 +287,10 @@ public class DeckSystem : MonoBehaviour
             case Action.Ice:
                 Iceattack.Play();
                 totalStats += CalculateIceDamage(item);
-                Enemy enemyStats = enemyObject.GetComponent<Enemy>();
-                if(enemyStats.armorEnemy < 0){
-                    currentTurn = TurnState.PlayerTurn;
+                if (enemyStats.armorEnemy > 0)
+                {
+                    enemyStats.skipTurn = true;
+                    Debug.Log("Enemy armor is less than 0, player gets another turn!");
                 }
                 break;
             case Action.Thunder:
@@ -231,25 +301,17 @@ public class DeckSystem : MonoBehaviour
                 HealPlayer(item.stats);
                 break;
             case Action.Defense:
-            Shield.Play();
-                // Implement defense action
                 DefensePlayer(item.stats);
                 break;
             case Action.Buff:
-          
-                // Implement buff action    
                 break;
             case Action.Slash:
                 slash.Play();
                 totalStats += item.stats;
                 break;
             case Action.Stab:
-           
-                // Implement stab action
                 break;
             case Action.DefenseFriend:
-            
-                // Implement defense friend action
                 break;
             default:
                 totalStats += item.stats;
@@ -267,6 +329,8 @@ public class DeckSystem : MonoBehaviour
         else if (item.tier == Tier.C) baseDamage = 3;
 
         // Add logic for combination with skill cards if needed
+        Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+        enemyStats.armorEnemy -= baseDamage;
 
         return baseDamage;
     }
@@ -280,6 +344,8 @@ public class DeckSystem : MonoBehaviour
         else if (item.tier == Tier.C) baseDamage = 1;
 
         // Add logic for combination with skill cards if needed
+        Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+        enemyStats.armorEnemy -= baseDamage;
 
         return baseDamage;
     }
@@ -293,7 +359,8 @@ public class DeckSystem : MonoBehaviour
         else if (item.tier == Tier.C) baseDamage = 2;
 
         // Add logic for combination with skill cards if needed
-
+        Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+        enemyStats.armorEnemy -= baseDamage;
         return baseDamage;
     }
 
@@ -316,6 +383,34 @@ public class DeckSystem : MonoBehaviour
             playerStats.armor += defenseAmount;
             
             Debug.Log("Player Armor: " + playerStats.armor);
+        }
+    }
+
+    public void RandomizeEnemy(Transform enemyParent){
+        EnemyVariable selectedVariable = SelectEnemyVariable();
+        if (selectedVariable != null && enemyParent.childCount == 0)
+        {
+            
+            GameObject enemy = Instantiate(enemyPrefab, enemyParent);
+            enemyObjects.Add(enemy);
+
+            Enemy enemyRandom = enemy.GetComponent<Enemy>();
+
+
+            if (enemyRandom != null)
+            {
+                enemyRandom.stats = selectedVariable.stats;
+                enemyRandom.tier = selectedVariable.tier;
+                enemyRandom.type = selectedVariable.type;
+                enemyRandom.healthEnemy = selectedVariable.healthEnemy;
+                enemyRandom.armorEnemy = selectedVariable.armorEnemy;
+
+                // Set the sprite image
+                // enemyRandom.animator = selectedVariable.animator;
+
+                // Set the name of the GameObject
+                enemy.name = selectedVariable.name;
+            }
         }
     }
 
@@ -354,6 +449,53 @@ public class DeckSystem : MonoBehaviour
                 card.name = selectedVariable.name;
             }
         }
+    }
+
+    private EnemyVariable SelectEnemyVariable(){
+        List<EnemyVariable> tierS = new List<EnemyVariable>();
+        List<EnemyVariable> tierA = new List<EnemyVariable>();
+        List<EnemyVariable> tierB = new List<EnemyVariable>();
+        List<EnemyVariable> tierC = new List<EnemyVariable>();
+
+        foreach (EnemyVariable variable in enemyVariables)
+        {
+            switch (variable.tier)
+            {
+                case Tier.S:
+                    tierS.Add(variable);
+                    break;
+                case Tier.A:
+                    tierA.Add(variable);
+                    break;
+                case Tier.B:
+                    tierB.Add(variable);
+                    break;
+                case Tier.C:
+                    tierC.Add(variable);
+                    break;
+            }
+        }
+
+
+        float rand = (float)random.NextDouble();
+        if (rand < 0.1f && tierS.Count > 0)
+        {
+            return tierS[random.Next(tierS.Count)];
+        }
+        else if (rand < 0.3f && tierA.Count > 0)
+        {
+            return tierA[random.Next(tierA.Count)];
+        }
+        else if (rand < 0.6f && tierB.Count > 0)
+        {
+            return tierB[random.Next(tierB.Count)];
+        }
+        else if (tierC.Count > 0)
+        {
+            return tierC[random.Next(tierC.Count)];
+        }
+
+        return null;
     }
 
     private Variable SelectRandomVariable()
@@ -434,19 +576,60 @@ public class DeckSystem : MonoBehaviour
 
     public void EndTurn()
     {
+        // if (currentTurn == TurnState.PlayerTurn)
+        // {
+        //     currentTurn = TurnState.EnemyTurn;
+        //     Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+        //     if (enemyStats != null && enemyStats.skipTurn)
+        //     {
+        //         enemyStats.skipTurn = false;
+        //         Debug.Log("Enemy turn skipped due to Ice attack!");
+        //         currentTurn = TurnState.PlayerTurn;
+        //         StartCoroutine(PlayerTurn());
+        //     }
+        //     else
+        //     {
+        //         StartCoroutine(EnemyTurn());
+        //     }
+        // }
+        // else if (currentTurn == TurnState.EnemyTurn)
+        // {
+        //     currentTurn = TurnState.PlayerTurn;
+        //     StartCoroutine(PlayerTurn());
+        // }
         if (currentTurn == TurnState.PlayerTurn)
         {
             currentTurn = TurnState.EnemyTurn;
             StartCoroutine(EnemyTurn());
-            
         }
         else if (currentTurn == TurnState.EnemyTurn)
         {
-            currentTurn = TurnState.PlayerTurn;
-            StartCoroutine(PlayerTurn());
-        }
+            Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+            if (enemyStats != null && enemyStats.skipTurn)
+            {
+                enemyStats.skipTurn = false;
+                Debug.Log("Enemy turn skipped due to Ice attack!");
 
-        
+                // Move to the next enemy if current one skips turn
+                currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
+                currentTurn = TurnState.PlayerTurn;
+                StartCoroutine(PlayerTurn());
+            }
+            else
+            {
+                currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
+                Debug.Log("Enemy Turn Ended. Next Enemy Index: " + currentEnemyIndex);
+                if (currentEnemyIndex == 0)
+                {
+                    currentTurn = TurnState.PlayerTurn;
+                    StartCoroutine(PlayerTurn());
+                }
+                else
+                {
+                    StartCoroutine(EnemyTurn());
+                }
+            }
+        }
     }
 
     IEnumerator PlayerTurn(){
@@ -456,8 +639,8 @@ public class DeckSystem : MonoBehaviour
 
     IEnumerator EnemyTurn()
     {
-        
-        Debug.Log("Enemy's turn!");
+        Debug.Log("Enemy's turn! Current Enemy Index: " + currentEnemyIndex);
+        // Debug.Log("Enemy's turn!");
         yield return new WaitForSeconds(2);
         EnemyAction action = DetermineEnemyAction();
         ExecuteEnemyAction(action);
@@ -508,13 +691,15 @@ public class DeckSystem : MonoBehaviour
             case EnemyAction.Defense:
                 Shield1.Play();
                 Debug.Log("Enemy defends!");
-                Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+                // Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+                Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
                 enemyStats.armorEnemy += randomValue;
                 break;
             case EnemyAction.Heal:
                 Heal1.Play();
                 Debug.Log("Enemy heals!");
-                Enemy enemyStat = enemyObject.GetComponent<Enemy>();
+                // Enemy enemyStat = enemyObject.GetComponent<Enemy>();
+                Enemy enemyStat = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
                 enemyStat.healthEnemy += randomValue;
                 break;
         }
