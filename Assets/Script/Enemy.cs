@@ -8,6 +8,9 @@ public class Enemy : MonoBehaviour
     public int armorEnemy;
     public int stats;
     public EnemyCard type;
+    public bool skipTurn;
+    public Tier tier;
+    public Sprite sprite;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +21,9 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(healthEnemy <= 0){
+            Destroy(gameObject);
+        }
     }
 }
 
