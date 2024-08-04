@@ -194,6 +194,10 @@ public class DeckSystem : MonoBehaviour
                 break;
             case Action.Ice:
                 totalStats += CalculateIceDamage(item);
+                Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+                if(enemyStats.armorEnemy < 0){
+                    currentTurn = TurnState.PlayerTurn;
+                }
                 break;
             case Action.Thunder:
                 totalStats += CalculateThunderDamage(item);
@@ -435,7 +439,7 @@ public class DeckSystem : MonoBehaviour
     private EnemyAction DetermineEnemyAction()
     {
         float rand = (float)random.NextDouble();
-        if (rand < 0.8f)
+        if (rand < 0.1f)
         {
             return EnemyAction.Attack;
         }

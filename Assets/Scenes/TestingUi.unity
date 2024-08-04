@@ -4160,96 +4160,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayCard: {fileID: 437267445}
   variables:
-  - name: SKill
+  - name: Ice
     stats: 10
-    tier: 1
+    tier: 4
     type: 1
     sprite: {fileID: 336232672, guid: 37afad263c19148458d4532990e6ae32, type: 3}
-    action: 1
-    currentTurn: 0
-  - name: Heal
-    stats: 2
-    tier: 4
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 5
-    currentTurn: 0
-  - name: Blast
-    stats: 10
-    tier: 4
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 2
-    currentTurn: 0
-  - name: Freeze
-    stats: 10
-    tier: 4
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
     action: 3
-    currentTurn: 0
-  - name: Defense
-    stats: 2
-    tier: 4
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 3
-    tier: 3
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 3
-    tier: 3
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 3
-    tier: 3
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 3
-    tier: 3
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 3
-    tier: 3
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 4
-    tier: 2
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 4
-    tier: 2
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
-    currentTurn: 0
-  - name: Protect
-    stats: 4
-    tier: 2
-    type: 1
-    sprite: {fileID: 1740221760, guid: 3be02e98ecaa94d4ea19be4c81b05a4b, type: 3}
-    action: 6
     currentTurn: 0
   cardPrefab: {fileID: 5987458290653071496, guid: 89f3b859bad3ac340a7d655fff5b482b, type: 3}
   parent1: {fileID: 1797447251}
