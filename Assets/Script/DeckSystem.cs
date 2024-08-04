@@ -1,9 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+public enum TurnState
+{
+    PlayerTurn,
+    EnemyTurn,
+    EndTurn
+}
 [Serializable]
 public class Variable
 {
@@ -12,7 +20,7 @@ public class Variable
     public Tier tier;
     public Type type;
     public Sprite sprite;
-    
+    public TurnState currentTurn;
 }
 public class DeckSystem : MonoBehaviour
 {   
@@ -29,44 +37,51 @@ public class DeckSystem : MonoBehaviour
     public Transform card3;
     public int maxMana = 6;
     private int availableMana;
+    public TurnState currentTurn;
+    public GameObject enemyObject;
+    public GameObject playerObject;
+    public GameObject image;
 
-    // public Transform cardParent;
-    // Start is called before the first frame update
+
     void Start()
     {
-        // PlayCard.onClick.AddListener(PlayOnClick);
+        
         availableMana = maxMana;
+        currentTurn = TurnState.PlayerTurn;
+        PlayCard.onClick.AddListener(PlayOnClick);
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         
     }
 
     public void PlayOnClick(){
+        if (currentTurn != TurnState.PlayerTurn)
+        {
+            Debug.Log("Not player's turn!");
+            return;
+        }
         int totalStats = 0;
         int totalManaCost = 0;
 
-        // Hitung total stats dan biaya mana dari masing-masing parent
         totalManaCost += CalculateManaCost(card1);
         totalManaCost += CalculateManaCost(card2);
         totalManaCost += CalculateManaCost(card3);
 
-        // Cek apakah total biaya mana melebihi mana yang tersedia
+        
         if (totalManaCost > availableMana)
         {
             Debug.Log("Not enough mana to perform action.");
-            return; // Batalkan aksi jika mana tidak cukup
+            return;
         }
 
-        // Jika mana cukup, lakukan aksi dan kurangi mana yang tersedia
         totalStats += Attack(card1);
         totalStats += Attack(card2);
         totalStats += Attack(card3);
         availableMana -= totalManaCost;
 
-        // Log total stats keseluruhan
         Debug.Log("Total Stats from all cards: " + totalStats);
         Debug.Log("Remaining Mana: " + availableMana);  
         RandomizeCard(parent1);
@@ -75,11 +90,22 @@ public class DeckSystem : MonoBehaviour
 
 
         availableMana = maxMana;
+        Enemy enemyScript = enemyObject.GetComponent<Enemy>();
+        if (enemyScript != null)
+        {
+            enemyScript.healthEnemy += enemyScript.armorEnemy - totalStats;
+            Debug.Log("Enemy Health: " + enemyScript.healthEnemy);
+        }
+        else
+        {
+            Debug.LogError("Enemy script not found on enemy object!");
+        }
+        EndTurn();
     }
     public int Attack(Transform cardAttack){
         int totalStats = 0;
 
-        // Iterasi melalui setiap child dari cardAttack
+
         foreach (Transform child in cardAttack)
         {
             DragableItem dragableItem = child.GetComponent<DragableItem>();
@@ -92,7 +118,7 @@ public class DeckSystem : MonoBehaviour
         // Log total stats for debugging
         Debug.Log("Total Stats from cards: " + totalStats);
 
-        // Hapus semua child setelah perhitungan selesai
+
         foreach (Transform child in cardAttack)
         {
             Destroy(child.gameObject);
@@ -105,7 +131,7 @@ public class DeckSystem : MonoBehaviour
     {
         int totalManaCost = 0;
 
-        // Iterasi melalui setiap child dari cardAttack untuk menghitung biaya mana
+
         foreach (Transform child in cardAttack)
         {
             DragableItem dragableItem = child.GetComponent<DragableItem>();
@@ -144,15 +170,14 @@ public class DeckSystem : MonoBehaviour
 
         if (selectedVariable != null)
         {
-            // Duplicate the prefab card
+
             GameObject card = Instantiate(cardPrefab, cardParent);
 
-            // Get the DragableItem component
+
             DragableItem dragableItem = card.GetComponent<DragableItem>();
 
-            // Set the data for the card
-            if (dragableItem != null)
 
+            if (dragableItem != null)
             {
                 dragableItem.cardName = selectedVariable.name;
                 dragableItem.stats = selectedVariable.stats;
@@ -196,39 +221,39 @@ public class DeckSystem : MonoBehaviour
             }
         }
 
-        // Determine probabilities
+
         float rand = (float)random.NextDouble();
-        if (rand < 0.1f && tierS.Count > 0) // 10% chance for Tier S
+        if (rand < 0.1f && tierS.Count > 0)
         {
             return tierS[random.Next(tierS.Count)];
         }
-        else if (rand < 0.3f && tierA.Count > 0) // 20% chance for Tier A
+        else if (rand < 0.3f && tierA.Count > 0)
         {
             return tierA[random.Next(tierA.Count)];
         }
-        else if (rand < 0.6f && tierB.Count > 0) // 30% chance for Tier B
+        else if (rand < 0.6f && tierB.Count > 0) 
         {
             return tierB[random.Next(tierB.Count)];
         }
-        else if (tierC.Count > 0) // 40% chance for Tier C
+        else if (tierC.Count > 0) 
         {
             return tierC[random.Next(tierC.Count)];
         }
 
-        return null; // Default case if no variables are available
+        return null; 
     }
 
-    public void GenerateCard(Transform cardParent) //logic generated card
+    public void GenerateCard(Transform cardParent)
     {
         foreach (Variable variable in variables)
         {
-            // Duplicate the prefab card
+
             GameObject card = Instantiate(cardPrefab, cardParent);
 
-            // Get the DragableItem component
+
             DragableItem dragableItem = card.GetComponent<DragableItem>();
 
-            // Set the data for the card
+
             if (dragableItem != null)
             {
                 dragableItem.cardName = variable.name;
@@ -237,12 +262,80 @@ public class DeckSystem : MonoBehaviour
                 dragableItem.type = variable.type;
                 dragableItem.sprite = variable.sprite;
 
-                // Set the sprite image
                 dragableItem.image.sprite = variable.sprite;
 
-                // Set the name of the GameObject
+                
                 card.name = variable.name;
             }
         }
     }
+
+    public void EndTurn()
+    {
+        if (currentTurn == TurnState.PlayerTurn)
+        {
+            currentTurn = TurnState.EnemyTurn;
+            StartCoroutine(EnemyTurn());
+        }
+        else if (currentTurn == TurnState.EnemyTurn)
+        {
+            currentTurn = TurnState.PlayerTurn;
+        }
+    }
+
+    IEnumerator EnemyTurn()
+    {
+        
+        Debug.Log("Enemy's turn!");
+        yield return new WaitForSeconds(2);
+        EnemyAction action = DetermineEnemyAction();
+        ExecuteEnemyAction(action);
+        image.SetActive(false);
+
+        EndTurn();
+    }
+
+    private EnemyAction DetermineEnemyAction()
+    {
+        float rand = (float)random.NextDouble();
+        if (rand < 0.8f)
+        {
+            return EnemyAction.Attack;
+        }
+        else if (rand < 0.9f)
+        {
+            return EnemyAction.Defense;
+        }
+        else
+        {
+            return EnemyAction.Heal;
+        }
+    }
+
+    private void ExecuteEnemyAction(EnemyAction action)
+    {
+        switch (action)
+        {
+            case EnemyAction.Attack:
+                Player playerStats = playerObject.GetComponent<Player>();
+                
+                playerStats.health += playerStats.armor - 4;
+                Debug.Log("Player Armor: " + playerStats.armor);
+                Debug.Log("Enemy attacks!");
+                Debug.Log("Player Health: " + playerStats.health);
+                break;
+            case EnemyAction.Defense:
+                Debug.Log("Enemy defends!");
+                break;
+            case EnemyAction.Heal:
+                Debug.Log("Enemy heals!");
+                break;
+        }
+    }
+}
+public enum EnemyAction
+{
+    Attack,
+    Defense,
+    Heal
 }
