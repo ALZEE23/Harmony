@@ -20,6 +20,7 @@ public class Variable
     public Tier tier;
     public Type type;
     public Sprite sprite;
+    public Action action;
     public TurnState currentTurn;
 }
 public class DeckSystem : MonoBehaviour
@@ -77,9 +78,9 @@ public class DeckSystem : MonoBehaviour
             return;
         }
 
-        totalStats += Attack(card1);
-        totalStats += Attack(card2);
-        totalStats += Attack(card3);
+        totalStats += ExecuteCardAction(card1);
+        totalStats += ExecuteCardAction(card2);
+        totalStats += ExecuteCardAction(card3);
         availableMana -= totalManaCost;
 
         Debug.Log("Total Stats from all cards: " + totalStats);
@@ -159,6 +160,131 @@ public class DeckSystem : MonoBehaviour
         return totalManaCost;
     }
 
+    public int ExecuteCardAction(Transform cardParent)
+    {
+        int totalStats = 0;
+
+        foreach (Transform child in cardParent)
+        {
+            DragableItem dragableItem = child.GetComponent<DragableItem>();
+            if (dragableItem != null)
+            {
+                totalStats += ExecuteAction(dragableItem);
+            }
+        }
+
+        foreach (Transform child in cardParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        return totalStats;
+    }
+
+    public int ExecuteAction(DragableItem item)
+    {
+        int totalStats = 0;
+        switch (item.action)
+        {
+            case Action.Skill:
+                totalStats += item.stats + 6; // Contoh penanganan action Skill
+                break;
+            case Action.Fire:
+                totalStats += CalculateFireDamage(item);
+                break;
+            case Action.Ice:
+                totalStats += CalculateIceDamage(item);
+                break;
+            case Action.Thunder:
+                totalStats += CalculateThunderDamage(item);
+                break;
+            case Action.Heal:
+                HealPlayer(item.stats);
+                break;
+            case Action.Defense:
+                // Implement defense action
+                DefensePlayer(item.stats);
+                break;
+            case Action.Buff:
+                // Implement buff action    
+                break;
+            case Action.Slash:
+                totalStats += item.stats;
+                break;
+            case Action.Stab:
+                // Implement stab action
+                break;
+            case Action.DefenseFriend:
+                // Implement defense friend action
+                break;
+            default:
+                totalStats += item.stats;
+                break;
+        }
+        return totalStats;
+    }
+
+    public int CalculateFireDamage(DragableItem item)
+    {
+        int baseDamage = item.stats;
+        if (item.tier == Tier.S) baseDamage = 15;
+        else if (item.tier == Tier.A) baseDamage = 10;
+        else if (item.tier == Tier.B) baseDamage = 5;
+        else if (item.tier == Tier.C) baseDamage = 3;
+
+        // Add logic for combination with skill cards if needed
+
+        return baseDamage;
+    }
+
+    public int CalculateIceDamage(DragableItem item)
+    {
+        int baseDamage = item.stats;
+        if (item.tier == Tier.S) baseDamage = 7;
+        else if (item.tier == Tier.A) baseDamage = 5;
+        else if (item.tier == Tier.B) baseDamage = 3;
+        else if (item.tier == Tier.C) baseDamage = 1;
+
+        // Add logic for combination with skill cards if needed
+
+        return baseDamage;
+    }
+
+    public int CalculateThunderDamage(DragableItem item)
+    {
+        int baseDamage = item.stats;
+        if (item.tier == Tier.S) baseDamage = 12;
+        else if (item.tier == Tier.A) baseDamage = 8;
+        else if (item.tier == Tier.B) baseDamage = 4;
+        else if (item.tier == Tier.C) baseDamage = 2;
+
+        // Add logic for combination with skill cards if needed
+
+        return baseDamage;
+    }
+
+    public void HealPlayer(int healAmount)
+    {
+        Player playerStats = playerObject.GetComponent<Player>();
+        if (playerStats != null)    
+        {
+            playerStats.health += healAmount;
+            Debug.Log("Player Healed: " + healAmount);
+            Debug.Log("Player Health: " + playerStats.health);
+        }
+    }
+
+    public void DefensePlayer(int defenseAmount)
+    {
+        Player playerStats = playerObject.GetComponent<Player>();
+        if (playerStats != null)
+        {
+            playerStats.armor += defenseAmount;
+            
+            Debug.Log("Player Armor: " + playerStats.armor);
+        }
+    }
+
     public void RandomizeCard(Transform cardParent)
     {
         foreach (Transform child in cardParent)
@@ -185,6 +311,7 @@ public class DeckSystem : MonoBehaviour
                 dragableItem.tier = selectedVariable.tier;
                 dragableItem.type = selectedVariable.type;
                 dragableItem.sprite = selectedVariable.sprite;
+                dragableItem.action = selectedVariable.action;
 
                 // Set the sprite image
                 dragableItem.image.sprite = selectedVariable.sprite;
@@ -324,23 +451,61 @@ public class DeckSystem : MonoBehaviour
 
     private void ExecuteEnemyAction(EnemyAction action)
     {
+        int randomValue = GetRandomValueBasedOnTier(); // Get random value based on tier
+
         switch (action)
         {
             case EnemyAction.Attack:
                 Player playerStats = playerObject.GetComponent<Player>();
-                
-                playerStats.health += playerStats.armor - 4;
+
+                playerStats.armor -= randomValue;
+                if (playerStats.armor < 0)
+                {
+                    playerStats.health += playerStats.armor;
+                }
+
                 Debug.Log("Player Armor: " + playerStats.armor);
                 Debug.Log("Enemy attacks!");
                 Debug.Log("Player Health: " + playerStats.health);
+
+                playerStats.armor = 0;
                 break;
             case EnemyAction.Defense:
                 Debug.Log("Enemy defends!");
+                Enemy enemyStats = enemyObject.GetComponent<Enemy>();
+                enemyStats.armorEnemy += randomValue;
                 break;
             case EnemyAction.Heal:
                 Debug.Log("Enemy heals!");
+                Enemy enemyStat = enemyObject.GetComponent<Enemy>();
+                enemyStat.healthEnemy += randomValue;
                 break;
         }
+    }
+
+    private int GetRandomValueBasedOnTier()
+    {
+        int randomValue = 0;
+        float tierProbability = (float)random.NextDouble();
+
+        if (tierProbability < 0.1f) // 10% chance for Tier S
+        {
+            randomValue = random.Next(15, 21); // Random value between 15 and 20
+        }
+        else if (tierProbability < 0.3f) // 20% chance for Tier A
+        {
+            randomValue = random.Next(10, 15); // Random value between 10 and 14
+        }
+        else if (tierProbability < 0.6f) // 30% chance for Tier B
+        {
+            randomValue = random.Next(5, 10); // Random value between 5 and 9
+        }
+        else // 40% chance for Tier C
+        {
+            randomValue = random.Next(1, 5); // Random value between 1 and 4
+        }
+
+        return randomValue;
     }
 }
 public enum EnemyAction
