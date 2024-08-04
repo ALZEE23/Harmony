@@ -13,6 +13,7 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     public Tier tier;
     public Type type;
     public Sprite sprite; 
+    public Action action;
     [HideInInspector]public Transform parentAfterDrag;
 
     public void Start(){
@@ -30,13 +31,13 @@ public class DragableItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void OnDrag(PointerEventData eventData)
     {
-        Debug.Log("Dragging");
+        // Debug.Log("Dragging");
         transform.position = Input.mousePosition;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log("End Drag");
+        // Debug.Log("End Drag");
         transform.SetParent(parentAfterDrag);
         image.raycastTarget = true;
     }
@@ -60,4 +61,19 @@ public enum Type{
     Support,
     Marksman,
     Mage
+}
+
+public enum Action{
+    Nothing,
+    Skill,
+    Fire,
+    Ice,
+    Thunder,
+    Heal,
+    Defense,
+    Buff,
+    Slash,
+    Stab,
+    DefenseFriend
+
 }
