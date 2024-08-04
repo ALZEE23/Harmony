@@ -100,6 +100,7 @@ public class DeckSystem : MonoBehaviour
         {
             Debug.LogError("Enemy script not found on enemy object!");
         }
+        image.SetActive(false);
         EndTurn();
     }
     public int Attack(Transform cardAttack){
@@ -276,11 +277,20 @@ public class DeckSystem : MonoBehaviour
         {
             currentTurn = TurnState.EnemyTurn;
             StartCoroutine(EnemyTurn());
+            
         }
         else if (currentTurn == TurnState.EnemyTurn)
         {
             currentTurn = TurnState.PlayerTurn;
+            StartCoroutine(PlayerTurn());
         }
+
+        
+    }
+
+    IEnumerator PlayerTurn(){
+        yield return new WaitForSeconds(2);
+        image.SetActive(true);
     }
 
     IEnumerator EnemyTurn()
