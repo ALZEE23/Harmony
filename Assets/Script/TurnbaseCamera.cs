@@ -41,7 +41,7 @@ public class TurnbaseCamera : MonoBehaviour
 
             // Mengubah posisi player
             Vector3 newPosition = playerTransform.position;
-            newPosition.x = enemy.position.x - 6;
+            newPosition.x = enemy.position.x - 5;
             newPosition.z = enemy.position.z; // Menggeser 6 unit ke kiri
             playerTransform.position = newPosition;
             if (Player.playerInputActions != null)

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(CharacterController))]
 public class Player : MonoBehaviour
@@ -46,6 +47,9 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if(health <= 0){
+            SceneManager.LoadScene("Retry");
+        }
         Movement();
     }
 
@@ -83,7 +87,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            spriteRenderer.flipX = false;
+            spriteRenderer.flipX = true;
         }
 
         lookAnimator.SetBool("run", moveDirection.x != 0);

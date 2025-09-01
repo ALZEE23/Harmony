@@ -15,7 +15,7 @@ public enum TurnState
 [Serializable]
 public class Variable
 {
-    public string name  ;
+    public string name;
     public int stats;
     public Tier tier;
     public Type type;
@@ -34,11 +34,18 @@ public class EnemyVariable
     public EnemyCard type;
     public bool skipTurn;
     public Tier tier;
-    
+
     public Sprite sprite;
 }
 public class DeckSystem : MonoBehaviour
-{   
+{
+    [SerializeField] ParticleSystem Iceattack;
+    [SerializeField] ParticleSystem slash;
+    [SerializeField] ParticleSystem Shield;
+    [SerializeField] ParticleSystem Heal;
+    [SerializeField] ParticleSystem Shield1;
+    [SerializeField] ParticleSystem slash1;
+    [SerializeField] ParticleSystem Heal1;
     public Button PlayCard;
     private System.Random random = new System.Random();
     public List<Variable> variables = new List<Variable>();
@@ -61,13 +68,13 @@ public class DeckSystem : MonoBehaviour
     public GameObject image;
     public List<EnemyVariable> enemyVariables = new List<EnemyVariable>();
     public GameObject enemyPrefab;
-    
+
     public List<GameObject> enemyObjects; // List of enemy objects
-    [SerializeField]private int currentEnemyIndex = 0;
+    [SerializeField] private int currentEnemyIndex = 0;
 
     void Start()
     {
-        
+
         availableMana = maxMana;
         currentTurn = TurnState.PlayerTurn;
         PlayCard.onClick.AddListener(PlayOnClick);
@@ -82,7 +89,8 @@ public class DeckSystem : MonoBehaviour
         RandomizeEnemy(enemy3);
     }
 
-    public void PlayOnClick(){
+    public void PlayOnClick()
+    {
         if (currentTurn != TurnState.PlayerTurn)
         {
             Debug.Log("Not player's turn!");
@@ -95,7 +103,7 @@ public class DeckSystem : MonoBehaviour
         totalManaCost += CalculateManaCost(card2);
         totalManaCost += CalculateManaCost(card3);
 
-        
+
         if (totalManaCost > availableMana)
         {
             Debug.Log("Not enough mana to perform action.");
@@ -108,7 +116,7 @@ public class DeckSystem : MonoBehaviour
         availableMana -= totalManaCost;
 
         Debug.Log("Total Stats from all cards: " + totalStats);
-        Debug.Log("Remaining Mana: " + availableMana);  
+        Debug.Log("Remaining Mana: " + availableMana);
         RandomizeCard(parent1);
         RandomizeCard(parent2);
         RandomizeCard(parent3);
@@ -141,7 +149,8 @@ public class DeckSystem : MonoBehaviour
         image.SetActive(false);
         EndTurn();
     }
-    public int Attack(Transform cardAttack){
+    public int Attack(Transform cardAttack)
+    {
         int totalStats = 0;
 
 
@@ -220,53 +229,21 @@ public class DeckSystem : MonoBehaviour
 
     public int ExecuteAction(DragableItem item)
     {
-        // int totalStats = 0;
-        // switch (item.action)
-        // {
-        //     case Action.Skill:
-        //         totalStats += item.stats + 6; // Contoh penanganan action Skill
-        //         break;
-        //     case Action.Fire:
-        //         totalStats += CalculateFireDamage(item);
-        //         break;
-        //     case Action.Ice:
-        //         totalStats += CalculateIceDamage(item);
-        //         Enemy enemyStats = enemyObject.GetComponent<Enemy>();
-        //         if (enemyStats.armorEnemy > 0)
-        //         {
-        //             enemyStats.skipTurn = true;
-        //             Debug.Log("Enemy armor is less than 0, player gets another turn!");
-        //         }
-        //         break;
-        //     case Action.Thunder:
-        //         totalStats += CalculateThunderDamage(item);
-        //         break;
-        //     case Action.Heal:
-        //         HealPlayer(item.stats);
-        //         break;
-        //     case Action.Defense:
-        //         // Implement defense action
-        //         DefensePlayer(item.stats);
-        //         break;
-        //     case Action.Buff:
-        //         // Implement buff action    
-        //         break;
-        //     case Action.Slash:
-        //         totalStats += item.stats;
-        //         break;
-        //     case Action.Stab:
-        //         // Implement stab action
-        //         break;
-        //     case Action.DefenseFriend:
-        //         // Implement defense friend action
-        //         break;
-        //     default:
-        //         totalStats += item.stats;
-        //         break;
-        // }
-        // return totalStats;
         int totalStats = 0;
+
+        if (enemyObjects[currentEnemyIndex] == null)
+        {
+            Debug.LogError("Enemy object is null!");
+            return totalStats;
+        }
+
         Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+
+        if (enemyStats == null)
+        {
+            Debug.LogError("Enemy script not found on enemy object!");
+            return totalStats;
+        }
 
         switch (item.action)
         {
@@ -277,6 +254,7 @@ public class DeckSystem : MonoBehaviour
                 totalStats += CalculateFireDamage(item);
                 break;
             case Action.Ice:
+                Iceattack.Play();
                 totalStats += CalculateIceDamage(item);
                 if (enemyStats.armorEnemy > 0)
                 {
@@ -288,14 +266,17 @@ public class DeckSystem : MonoBehaviour
                 totalStats += CalculateThunderDamage(item);
                 break;
             case Action.Heal:
+                Heal.Play();
                 HealPlayer(item.stats);
                 break;
             case Action.Defense:
+                Shield.Play();
                 DefensePlayer(item.stats);
                 break;
             case Action.Buff:
                 break;
             case Action.Slash:
+                slash.Play();
                 totalStats += item.stats;
                 break;
             case Action.Stab:
@@ -356,7 +337,7 @@ public class DeckSystem : MonoBehaviour
     public void HealPlayer(int healAmount)
     {
         Player playerStats = playerObject.GetComponent<Player>();
-        if (playerStats != null)    
+        if (playerStats != null)
         {
             playerStats.health += healAmount;
             Debug.Log("Player Healed: " + healAmount);
@@ -370,16 +351,17 @@ public class DeckSystem : MonoBehaviour
         if (playerStats != null)
         {
             playerStats.armor += defenseAmount;
-            
+
             Debug.Log("Player Armor: " + playerStats.armor);
         }
     }
 
-    public void RandomizeEnemy(Transform enemyParent){
+    public void RandomizeEnemy(Transform enemyParent)
+    {
         EnemyVariable selectedVariable = SelectEnemyVariable();
         if (selectedVariable != null && enemyParent.childCount == 0)
         {
-            
+
             GameObject enemy = Instantiate(enemyPrefab, enemyParent);
             enemyObjects.Add(enemy);
 
@@ -410,8 +392,8 @@ public class DeckSystem : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        Variable selectedVariable = SelectRandomVariable(); 
-        
+        Variable selectedVariable = SelectRandomVariable();
+
 
         if (selectedVariable != null)
         {
@@ -440,7 +422,8 @@ public class DeckSystem : MonoBehaviour
         }
     }
 
-    private EnemyVariable SelectEnemyVariable(){
+    private EnemyVariable SelectEnemyVariable()
+    {
         List<EnemyVariable> tierS = new List<EnemyVariable>();
         List<EnemyVariable> tierA = new List<EnemyVariable>();
         List<EnemyVariable> tierB = new List<EnemyVariable>();
@@ -524,16 +507,16 @@ public class DeckSystem : MonoBehaviour
         {
             return tierA[random.Next(tierA.Count)];
         }
-        else if (rand < 0.6f && tierB.Count > 0) 
+        else if (rand < 0.6f && tierB.Count > 0)
         {
             return tierB[random.Next(tierB.Count)];
         }
-        else if (tierC.Count > 0) 
+        else if (tierC.Count > 0)
         {
             return tierC[random.Next(tierC.Count)];
         }
 
-        return null; 
+        return null;
     }
 
     public void GenerateCard(Transform cardParent)
@@ -557,7 +540,7 @@ public class DeckSystem : MonoBehaviour
 
                 dragableItem.image.sprite = variable.sprite;
 
-                
+
                 card.name = variable.name;
             }
         }
@@ -593,21 +576,38 @@ public class DeckSystem : MonoBehaviour
         }
         else if (currentTurn == TurnState.EnemyTurn)
         {
-            Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
-            if (enemyStats != null && enemyStats.skipTurn)
+            if (enemyObjects[currentEnemyIndex] != null)
             {
-                enemyStats.skipTurn = false;
-                Debug.Log("Enemy turn skipped due to Ice attack!");
+                Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
+                if (enemyStats != null && enemyStats.skipTurn)
+                {
+                    enemyStats.skipTurn = false;
+                    Debug.Log("Enemy turn skipped due to Ice attack!");
 
-                // Move to the next enemy if current one skips turn
-                currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
-                currentTurn = TurnState.PlayerTurn;
-                StartCoroutine(PlayerTurn());
+                    // Move to the next enemy if current one skips turn
+                    currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
+                    currentTurn = TurnState.PlayerTurn;
+                    StartCoroutine(PlayerTurn());
+                }
+                else
+                {
+                    currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
+                    Debug.Log("Enemy Turn Ended. Next Enemy Index: " + currentEnemyIndex);
+                    if (currentEnemyIndex == 0)
+                    {
+                        currentTurn = TurnState.PlayerTurn;
+                        StartCoroutine(PlayerTurn());
+                    }
+                    else
+                    {
+                        StartCoroutine(EnemyTurn());
+                    }
+                }
             }
             else
             {
+                Debug.LogWarning("Enemy object is null. Skipping turn.");
                 currentEnemyIndex = (currentEnemyIndex + 1) % enemyObjects.Count;
-                Debug.Log("Enemy Turn Ended. Next Enemy Index: " + currentEnemyIndex);
                 if (currentEnemyIndex == 0)
                 {
                     currentTurn = TurnState.PlayerTurn;
@@ -621,16 +621,24 @@ public class DeckSystem : MonoBehaviour
         }
     }
 
-    IEnumerator PlayerTurn(){
+    IEnumerator PlayerTurn()
+    {
         yield return new WaitForSeconds(2);
         image.SetActive(true);
     }
 
     IEnumerator EnemyTurn()
     {
+        if (enemyObjects[currentEnemyIndex] == null)
+        {
+            Debug.LogWarning("Enemy object is null. Skipping turn.");
+            EndTurn();
+            yield break;
+        }
+
         Debug.Log("Enemy's turn! Current Enemy Index: " + currentEnemyIndex);
-        // Debug.Log("Enemy's turn!");
         yield return new WaitForSeconds(2);
+
         EnemyAction action = DetermineEnemyAction();
         ExecuteEnemyAction(action);
         image.SetActive(false);
@@ -641,7 +649,7 @@ public class DeckSystem : MonoBehaviour
     private EnemyAction DetermineEnemyAction()
     {
         float rand = (float)random.NextDouble();
-        if (rand < 0.1f)
+        if (rand < 0.8f)
         {
             return EnemyAction.Attack;
         }
@@ -657,11 +665,18 @@ public class DeckSystem : MonoBehaviour
 
     private void ExecuteEnemyAction(EnemyAction action)
     {
+        if (enemyObjects[currentEnemyIndex] == null)
+        {
+            Debug.LogWarning("Enemy object is null. Skipping action.");
+            return;
+        }
+
         int randomValue = GetRandomValueBasedOnTier(); // Get random value based on tier
 
         switch (action)
         {
             case EnemyAction.Attack:
+                slash1.Play();
                 Player playerStats = playerObject.GetComponent<Player>();
 
                 playerStats.armor -= randomValue;
@@ -677,16 +692,22 @@ public class DeckSystem : MonoBehaviour
                 playerStats.armor = 0;
                 break;
             case EnemyAction.Defense:
+                Shield1.Play();
                 Debug.Log("Enemy defends!");
-                // Enemy enemyStats = enemyObject.GetComponent<Enemy>();
                 Enemy enemyStats = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
-                enemyStats.armorEnemy += randomValue;
+                if (enemyStats != null)
+                {
+                    enemyStats.armorEnemy += randomValue;
+                }
                 break;
             case EnemyAction.Heal:
+                Heal1.Play();
                 Debug.Log("Enemy heals!");
-                // Enemy enemyStat = enemyObject.GetComponent<Enemy>();
                 Enemy enemyStat = enemyObjects[currentEnemyIndex].GetComponent<Enemy>();
-                enemyStat.healthEnemy += randomValue;
+                if (enemyStat != null)
+                {
+                    enemyStat.healthEnemy += randomValue;
+                }
                 break;
         }
     }
@@ -698,19 +719,19 @@ public class DeckSystem : MonoBehaviour
 
         if (tierProbability < 0.1f) // 10% chance for Tier S
         {
-            randomValue = random.Next(15, 21); // Random value between 15 and 20
+            randomValue = random.Next(4, 5); // Random value between 15 and 20
         }
         else if (tierProbability < 0.3f) // 20% chance for Tier A
         {
-            randomValue = random.Next(10, 15); // Random value between 10 and 14
+            randomValue = random.Next(3, 4); // Random value between 10 and 14
         }
         else if (tierProbability < 0.6f) // 30% chance for Tier B
         {
-            randomValue = random.Next(5, 10); // Random value between 5 and 9
+            randomValue = random.Next(2, 3); // Random value between 5 and 9
         }
         else // 40% chance for Tier C
         {
-            randomValue = random.Next(1, 5); // Random value between 1 and 4
+            randomValue = random.Next(1, 2); // Random value between 1 and 4
         }
 
         return randomValue;
